@@ -22,6 +22,7 @@ import functools
 from subprocess import *
 import config
 import codecs
+import os
 
 import six
 from six import StringIO
@@ -115,6 +116,10 @@ def colorize(text, color=None, attrib=None):
     CATTRS = {"regular": "0", "bold": "1", "underline": "4", "strike": "9",
                 "light": "1", "dark": "2", "invert": "7"}
 
+    if os.environ.get('TERM') == 'xterm-256color':
+        COLORS = {"black": "239", "red": "211", "green": "121", "yellow": "227",
+                    "blue": "117", "purple": "147", "cyan": "87", "white": "255"}
+
     CPRE = '\033['
     CSUF = '\033[0m'
 
@@ -122,13 +127,19 @@ def colorize(text, color=None, attrib=None):
         return text
 
     ccode = ""
+
+    if os.environ.get('TERM') == 'xterm-256color':
+        ccode += '38;5'
+
+    if color in COLORS:
+        ccode += ";" + COLORS[color]
+
     if attrib:
         for attr in attrib.lower().split():
             attr = attr.strip(",+|")
             if attr in CATTRS:
                 ccode += ";" + CATTRS[attr]
-    if color in COLORS:
-        ccode += ";" + COLORS[color]
+
     return CPRE + ccode + "m" + text + CSUF
 
 def green(text, attrib=None):
